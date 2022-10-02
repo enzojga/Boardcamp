@@ -27,10 +27,10 @@ const postCategories = async (req, res) => {
             return res.status(422).send("Nome ja existente");
         }
         await connection.query("INSERT INTO categories (name) VALUES ($1)", [name]);
-        res.sendStatus(200);
+        res.sendStatus(201);
     } catch (err) {
         console.log(err);
-        res.send(422);
+        res.sendStatus(422);
     }
 }
 
