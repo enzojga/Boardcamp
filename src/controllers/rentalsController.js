@@ -5,8 +5,44 @@ let connection = psql();
 
 const getRentals = async (req, res) => {
     try {
-        const customers = await connection.query('SELECT * FROM rentals JOIN customers ON rentals."customerId"=customers.id JOIN games ON rentals."gameId"=games.id');
-        res.status(200).send(customers.rows);
+        
+        const { customerId, gameId } = req.query;
+
+        if(customerId){
+            const rentalByCustomerId = await connection.query(`SELECT rentals.*,
+            JSON_BUILD_OBJECT('id',customers.id, 'name', customers.name) AS customer,
+            JSON_BUILD_OBJECT('id',games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN customers ON rentals."customerId"=customers.id
+            JOIN games ON rentals."gameId"=games.id
+            JOIN categories on games."categoryId"=categories.id
+            WHERE rentals."customerId"=$1`,[customerId]);
+            
+            return res.status(200).send(rentalByCustomerId.rows);
+        }
+
+        if(gameId){
+            const rentalByGameId = await connection.query(`SELECT rentals.*,
+            JSON_BUILD_OBJECT('id',customers.id, 'name', customers.name) AS customer,
+            JSON_BUILD_OBJECT('id',games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN customers ON rentals."customerId"=customers.id
+            JOIN games ON rentals."gameId"=games.id
+            JOIN categories on games."categoryId"=categories.id
+            WHERE rentals."customerId"=$1`,[gameId]);
+            
+            return res.status(200).send(rentalByGameId.rows);
+
+        }
+
+        const rental = await connection.query(`SELECT rentals.*,
+            JSON_BUILD_OBJECT('id',customers.id, 'name', customers.name) AS customer,
+            JSON_BUILD_OBJECT('id',games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN customers ON rentals."customerId"=customers.id
+            JOIN games ON rentals."gameId"=games.id
+            JOIN categories on games."categoryId"=categories.id`);
+        res.status(200).send(rental.rows);
     } catch (err) {
         console.log(err);
         res.sendStatus(422);

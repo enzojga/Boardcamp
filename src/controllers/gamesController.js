@@ -8,7 +8,7 @@ const getGames = async (req, res) => {
         const { name } = req.query;
         if (name) {
             console.log(name);
-            const games = await connection.query("SELECT * FROM games WHERE name LIKE '%" + name + "%'", [name]);
+            const games = await connection.query(`SELECT * FROM games WHERE name LIKE $1`, [`${name}%`]);
             return res.status(200).send(games.rows);
         }
         const games = await connection.query("SELECT * FROM games");

@@ -5,6 +5,12 @@ let connection = psql();
 
 const getCustomers = async (req, res) => {
     try {
+        const { cpf } = req.query;
+        if(cpf){
+            console.log(cpf);
+            const customer = await connection.query(`SELECT * FROM customers WHERE cpf LIKE $1`, [`${cpf}%`]);
+            return res.status(200).send(customer.rows);
+        }
         const customers = await connection.query("SELECT * FROM customers");
         res.status(200).send(customers.rows);
     } catch (err) {
