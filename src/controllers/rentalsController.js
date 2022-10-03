@@ -60,9 +60,9 @@ const postRentals = async (req, res) => {
         console.log(game.rows);
         const date = dayjs().format('YYYY-MM-D');
         const originalPrice = game.rows[0].pricePerDay * daysRented;
-        res.sendStatus(201);
         await connection.query('INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice","delayFee") VALUES ($1,$2,$3,$4,null,$5,null)',
             [customerId, gameId, date, daysRented, originalPrice ]);
+        res.sendStatus(201);
     }catch (err){
 
     }
@@ -72,12 +72,36 @@ const returnRental = async (req, res) => {
     try {
         const { id } = req.params;
         if(!id){
-            res.sendStatus(422);
+            return res.sendStatus(422);
         }
-        const date = dayjs().format('YYYY-MM-D');
-        await connection.query('UPDATE rentals SET "returnDate" = $1 WHERE id = $2',[date, id]);
+        const rental = await connection.query('SELECT * FROM rentals WHERE id = $1',[id]);
+        if(!rental.rows[0]){
+            return res.sendStatus(404);
+        }
+        if(rental.rows[0].returnDate){
+            return res.sendStatus(400);
+        }
+        const game = await connection.query('SELECT * FROM games WHERE id = $1',[rental.rows[0].gameId]);
+        console.log(rental.rows);
+
+        const dateRented = rental.rows[0].rentDate;
+        const dayRented = dayjs(dateRented).format('D');
+
+        const today = dayjs().format('D');
+
+        const usedDays = today - dayRented;
+
+        let delayFee = 0;
+
+        if(usedDays > rental.rows[0].daysRented){
+            delayFee += ( usedDays - rental.rows[0].daysRented) * game.rows[0].pricePerDay;
+        }
+
+        await connection.query('UPDATE rentals SET "returnDate"=$1, "delayFee"=$2 WHERE id=$3',
+            [dayjs().format('YYYY-MM-D'), delayFee, id]);
         res.sendStatus(200);
     } catch (err) {
+        console.log(err);
         res.sendStatus(422);
     }
 }
