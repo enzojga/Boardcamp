@@ -1,20 +1,16 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
 
+dotenv.config();
 
 const { Pool } = pg;
 
 export default function psql(){
 
     try{
-
-    const conn = new Pool({
-        user: 'postgres',
-        password: '200enzo',
-        host: 'localhost',
-        port: '5432',
-        database: 'boardcamp'
-    });
-
+        const conn = new Pool({
+            connectionString: process.env.DATABASE_URL,
+        });
     return conn;
 
     }catch (err){
