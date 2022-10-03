@@ -8,7 +8,7 @@ const getCategories = async (req, res) => {
         res.status(200).send(categories.rows);
     } catch (err) {
         console.log(err);
-        res.sendStatus(422);
+        res.sendStatus(500);
     }
 };
 
@@ -29,8 +29,7 @@ const postCategories = async (req, res) => {
         await connection.query("INSERT INTO categories (name) VALUES ($1)", [name]);
         res.sendStatus(201);
     } catch (err) {
-        console.log(err);
-        res.sendStatus(422);
+        res.sendStatus(500);
     }
 }
 

@@ -7,15 +7,13 @@ const getCustomers = async (req, res) => {
     try {
         const { cpf } = req.query;
         if(cpf){
-            console.log(cpf);
             const customer = await connection.query(`SELECT * FROM customers WHERE cpf LIKE $1`, [`${cpf}%`]);
             return res.status(200).send(customer.rows);
         }
         const customers = await connection.query("SELECT * FROM customers");
         res.status(200).send(customers.rows);
     } catch (err) {
-        console.log(err);
-        res.sendStatus(422);
+        res.sendStatus(500);
     }
 };
 
@@ -32,8 +30,7 @@ const getCustomerById = async (req, res) => {
         res.send(customer.rows[0]);
 
     } catch (err) {
-        console.log(err);
-        res.sendStatus(422);
+        res.sendStatus(500);
     }
 }
 
@@ -64,8 +61,7 @@ const postCustomer = async (req, res) => {
             [name, phone, cpf, birthday]);
         res.sendStatus(201);
     } catch (err) {
-        console.log(err);
-        res.sendStatus(422);
+        res.sendStatus(500);
     }
 };
 
@@ -99,7 +95,7 @@ const updateCustomer = async (req, res) => {
 
         res.sendStatus(200);
     } catch (err) {
-        console.log(err);
+        res.sendStatus(500);
     }
 }
 
