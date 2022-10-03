@@ -5,7 +5,7 @@ let connection = psql();
 
 const getRentals = async (req, res) => {
     try {
-        const customers = await connection.query("SELECT * FROM rentals");
+        const customers = await connection.query('SELECT * FROM rentals JOIN customers ON rentals."customerId"=customers.id JOIN games ON rentals."gameId"=games.id');
         res.status(200).send(customers.rows);
     } catch (err) {
         console.log(err);
@@ -30,6 +30,46 @@ const postRentals = async (req, res) => {
     }catch (err){
 
     }
+};
+
+const returnRental = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if(!id){
+            res.sendStatus(422);
+        }
+        const date = dayjs().format('YYYY-MM-D');
+        await connection.query('UPDATE rentals SET "returnDate" = $1 WHERE id = $2',[date, id]);
+        res.sendStatus(200);
+    } catch (err) {
+        res.sendStatus(422);
+    }
 }
 
-export {getRentals, postRentals};
+
+const deleteRental = async (req, res) =>{
+    try{
+        const { id } = req.params;
+        if(!id){
+            return res.sendStatus(422);
+        }
+
+        const rental  = await connection.query('SELECT * FROM rentals WHERE id = $1',[id]);
+        console.log(rental.rows);
+
+        if(!rental.rows[0]){
+            return res.sendStatus(404);
+        }
+
+        if(!rental.rows[0].returnDate){
+            return res.sendStatus(400);
+        }
+        await connection.query('DELETE FROM rentals WHERE id = $1', [id]);
+        res.sendStatus(200);
+
+    }catch(err){
+        console.log(err);
+    }
+}
+
+export {getRentals, postRentals, deleteRental, returnRental};
